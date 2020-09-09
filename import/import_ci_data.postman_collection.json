@@ -1,0 +1,460 @@
+{
+	"info": {
+		"_postman_id": "bf66a43b-a122-4d41-a761-384dc099c304",
+		"name": "import_ci_data",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c9c21754-dc6e-48af-ba46-ebff205a11a2",
+						"exec": [
+							"pm.test(\"login\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.eql(\"OK\");",
+							"    pm.environment.set(\"authorization\", postman.getResponseHeader(\"Authorization\"));",
+							"    ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json, text/plain, */*"
+					},
+					{
+						"key": "Origin",
+						"value": "http://111.230.161.237:29090"
+					},
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Safari/537.36"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json;charset=UTF-8"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"username\":\"{{username}}\",\"password\":\"{{password}}\"}"
+				},
+				"url": {
+					"raw": "http://{{domain}}/auth/v1/api/login",
+					"protocol": "http",
+					"host": [
+						"{{domain}}"
+					],
+					"path": [
+						"auth",
+						"v1",
+						"api",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_ref_ci_type_id",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "0e7b4adc-1c71-4ca1-9b93-bd3360c296ef",
+						"exec": [
+							"var ciTypeNames=[];",
+							"",
+							"for (var key in data) {",
+							"    if (key.split(\"@\").length==2){",
+							"        ciTypeNames.push(key.split(\"@\")[1]);",
+							"    } else if (key.split(\"@@\").length==2){",
+							"        ciTypeNames.push(key.split(\"@@\")[1]);",
+							"    }",
+							"}",
+							"",
+							"pm.environment.set(\"requestBody\",JSON.stringify(",
+							"    {\"dialect\":{\"showCiHistory\":false},",
+							"    \"filters\":[],",
+							"    \"pageable\":{\"pageSize\":100,\"startIndex\":0},",
+							"    \"paging\":false}",
+							"));",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "611399b1-7979-4467-bdf6-f50c9dde241d",
+						"exec": [
+							"pm.test(\"get ref ciTypeId\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.statusCode).to.eql(\"OK\");",
+							"    pm.environment.set(\"refCiTypes\", JSON.stringify(jsonData));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "accept",
+						"value": "application/json, text/plain, */*"
+					},
+					{
+						"key": "accept-encoding",
+						"value": "gzip, deflate"
+					},
+					{
+						"key": "accept-language",
+						"value": "en,zh-CN;q=0.9,zh;q=0.8"
+					},
+					{
+						"key": "authorization",
+						"value": "{{authorization}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "cookie",
+						"value": "JSESSIONID=6A1A8E016D0BDE9B2FCA743A5CF49592; DokuWiki=5d2b2ea77997ce7cee2a7765004242aa; DW68700bfd16c2027de7de74a5a8202a6f=Z3JheQ%3D%3D%7C1%7CMU%2F%2BSgEqw5fOB2utDt%2FdsQ7p6IOWaeNBbtF9zYlKmaE%3D"
+					},
+					{
+						"key": "host",
+						"value": "120.79.2.48:29090"
+					},
+					{
+						"key": "origin",
+						"value": "http://120.79.2.48:29090"
+					},
+					{
+						"key": "proxy-connection",
+						"value": "keep-alive"
+					},
+					{
+						"key": "referer",
+						"value": "http://120.79.2.48:29090/"
+					},
+					{
+						"key": "user-agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Safari/537.36"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{{requestBody}}"
+				},
+				"url": {
+					"raw": "http://{{domain}}/wecmdb/api/v2/ciTypes/retrieve",
+					"protocol": "http",
+					"host": [
+						"{{domain}}"
+					],
+					"path": [
+						"wecmdb",
+						"api",
+						"v2",
+						"ciTypes",
+						"retrieve"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_ref_guids",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "0e7b4adc-1c71-4ca1-9b93-bd3360c296ef",
+						"exec": [
+							"var ciTypeIds=[];",
+							"var ciData=[];",
+							"var ci={};",
+							"",
+							"var refCiTypes = JSON.parse(pm.environment.get(\"refCiTypes\"));",
+							"for (var key in data){",
+							"    if (key.split(\"@\").length==2){",
+							"        ciTypeName=key.split(\"@\")[1];",
+							"        for (var i=0;i<refCiTypes.data.contents.length;i++) {",
+							"             refCiType = refCiTypes.data.contents[i];",
+							"            if (ciTypeName.split(\".\")[0]===refCiType.tableName) {",
+							"                getRefGuid(refCiType.ciTypeId,ciTypeName, data[key], \"eq\");",
+							"            }",
+							"        }",
+							"    } else if (key.split(\"@@\").length==2){",
+							"        ciTypeName=key.split(\"@@\")[1];",
+							"        for (var i=0;i<refCiTypes.data.contents.length;i++) {",
+							"             refCiType = refCiTypes.data.contents[i];",
+							"            if (ciTypeName.split(\".\")[0]===refCiType.tableName) {",
+							"                getRefGuid(refCiType.ciTypeId,ciTypeName, data[key].split('@@'), \"in\");",
+							"            }",
+							"        }",
+							"    }",
+							"}",
+							"",
+							"function getRefGuid(refCiTypeId, refCiTypeTableName, refKeyName, operator) {",
+							"        pm.sendRequest({",
+							"            url: \"http://\"+ pm.environment.get(\"domain\") + \"/wecmdb/ui/v2/ci-types/\"+refCiTypeId+\"/ci-data/query\" ,",
+							"            method: 'POST',",
+							"            header: {",
+							"                'Accept': 'application/json',",
+							"                'Content-Type': 'application/json;charset=UTF-8',",
+							"                'authorization': pm.environment.get(\"authorization\"),",
+							"            },",
+							"            body: {",
+							"                mode: 'raw', ",
+							"                raw: JSON.stringify({\"dialect\":{\"showCiHistory\":false},\"filters\":[{\"name\":\"key_name\",\"operator\":operator,\"value\":refKeyName}],\"pageable\":{\"pageSize\":10,\"startIndex\":0},\"paging\":true}) ",
+							"          }",
+							"        }, function (err, res) {",
+							"            var rt = res.json();",
+							"            var guids=[];",
+							"            for(var i=0;i<rt.data.contents.length;i++){",
+							"                guids.push(rt.data.contents[i].data.guid);",
+							"            }",
+							"            ",
+							"            if (operator===\"in\") {",
+							"                pm.environment.set(\"guid_of_\"+refCiTypeTableName, guids);",
+							"            } else {",
+							"                pm.environment.set(\"guid_of_\"+refCiTypeTableName, guids[0]);",
+							"            }",
+							"",
+							"            console.log(\"guid_of_\"+refCiTypeTableName+\" : \"+pm.environment.get(\"guid_of_\"+refCiTypeTableName)   );",
+							"        }); ",
+							"}",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "611399b1-7979-4467-bdf6-f50c9dde241d",
+						"exec": [
+							"pm.test(\"get ref ciTypeId\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.statusCode).to.eql(\"OK\");",
+							"    pm.environment.set(\"refCiTypes\", JSON.stringify(jsonData));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "accept",
+						"value": "application/json, text/plain, */*"
+					},
+					{
+						"key": "accept-encoding",
+						"value": "gzip, deflate"
+					},
+					{
+						"key": "accept-language",
+						"value": "en,zh-CN;q=0.9,zh;q=0.8"
+					},
+					{
+						"key": "authorization",
+						"value": "{{authorization}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "cookie",
+						"value": "JSESSIONID=6A1A8E016D0BDE9B2FCA743A5CF49592; DokuWiki=5d2b2ea77997ce7cee2a7765004242aa; DW68700bfd16c2027de7de74a5a8202a6f=Z3JheQ%3D%3D%7C1%7CMU%2F%2BSgEqw5fOB2utDt%2FdsQ7p6IOWaeNBbtF9zYlKmaE%3D"
+					},
+					{
+						"key": "host",
+						"value": "120.79.2.48:29090"
+					},
+					{
+						"key": "origin",
+						"value": "http://120.79.2.48:29090"
+					},
+					{
+						"key": "proxy-connection",
+						"value": "keep-alive"
+					},
+					{
+						"key": "referer",
+						"value": "http://120.79.2.48:29090/"
+					},
+					{
+						"key": "user-agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Safari/537.36"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{{requestBody}}"
+				},
+				"url": {
+					"raw": "http://{{domain}}/wecmdb/api/v2/ciTypes/retrieve",
+					"protocol": "http",
+					"host": [
+						"{{domain}}"
+					],
+					"path": [
+						"wecmdb",
+						"api",
+						"v2",
+						"ciTypes",
+						"retrieve"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "import_ci_data",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "0e7b4adc-1c71-4ca1-9b93-bd3360c296ef",
+						"exec": [
+							"var ciData=[];",
+							"var ci={};",
+							"",
+							"for (var key in data) {",
+							"    if (key.split(\"@\").length==2){",
+							"        refCiType=key.split(\"@\")[1];",
+							"        if (refCiType.split(\".\").length==2){",
+							"            refCiTypeKey=refCiType.split(\".\")[1];",
+							"        } else {",
+							"            refCiTypeKey=refCiType;",
+							"        }",
+							"        ci[refCiTypeKey]=pm.environment.get(\"guid_of_\"+refCiType);",
+							"    } else if (key.split(\"@@\").length==2){",
+							"        refCiType=key.split(\"@@\")[1];",
+							"        if (refCiType.split(\".\").length==2){",
+							"            refCiTypeKey=refCiType.split(\".\")[1];",
+							"        } else {",
+							"            refCiTypeKey=refCiType;",
+							"        }",
+							"        ci[refCiTypeKey]=pm.environment.get(\"guid_of_\"+refCiType);",
+							"    } else if (key!=\"ci_type_id\"){",
+							"        ci[key]=data[key];",
+							"    }",
+							"}",
+							"",
+							"ciData.push(ci);",
+							"pm.environment.set(\"ci_data\",JSON.stringify(ciData));"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "611399b1-7979-4467-bdf6-f50c9dde241d",
+						"exec": [
+							"pm.test(\"statusCode\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (data.ci_type_id === null || data.ci_type_id === undefined || data.ci_type_id === ''){",
+							"        pm.expect(jsonData.statusCode).to.eql(\"ERROR\");",
+							"    } else {",
+							"        pm.expect(jsonData.statusCode).to.eql(\"OK\");",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "accept",
+						"value": "application/json, text/plain, */*"
+					},
+					{
+						"key": "accept-encoding",
+						"value": "gzip, deflate"
+					},
+					{
+						"key": "accept-language",
+						"value": "en,zh-CN;q=0.9,zh;q=0.8"
+					},
+					{
+						"key": "authorization",
+						"value": "{{authorization}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "cookie",
+						"value": "JSESSIONID=6A1A8E016D0BDE9B2FCA743A5CF49592; DokuWiki=5d2b2ea77997ce7cee2a7765004242aa; DW68700bfd16c2027de7de74a5a8202a6f=Z3JheQ%3D%3D%7C1%7CMU%2F%2BSgEqw5fOB2utDt%2FdsQ7p6IOWaeNBbtF9zYlKmaE%3D"
+					},
+					{
+						"key": "host",
+						"value": "120.79.2.48:29090"
+					},
+					{
+						"key": "origin",
+						"value": "http://120.79.2.48:29090"
+					},
+					{
+						"key": "proxy-connection",
+						"value": "keep-alive"
+					},
+					{
+						"key": "referer",
+						"value": "http://120.79.2.48:29090/"
+					},
+					{
+						"key": "user-agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Safari/537.36"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{{ci_data}}"
+				},
+				"url": {
+					"raw": "http://{{domain}}/wecmdb/ui/v2/ci-types/{{ci_type_id}}/ci-data/batch-create",
+					"protocol": "http",
+					"host": [
+						"{{domain}}"
+					],
+					"path": [
+						"wecmdb",
+						"ui",
+						"v2",
+						"ci-types",
+						"{{ci_type_id}}",
+						"ci-data",
+						"batch-create"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
